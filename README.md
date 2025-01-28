@@ -18,6 +18,7 @@ This project leverages FastAPI for building a high-performance web API and inclu
 - **Attribute Detection**: Get precise details about facial features and emotions.
 - **Containerized Deployment**: Easily deploy the API using Docker.
 - **Azure Integration**: Leverages Microsoft Azure's Face API for reliable and robust face detection.
+- **Azure Container Registry (ACR) Support**: Push and manage Docker images in ACR for efficient Azure deployments.
 
 ## How It Works
 
@@ -37,8 +38,11 @@ This project leverages FastAPI for building a high-performance web API and inclu
 2. **Python Environment**:
    - Python 3.9 or higher is required.
 
-3. **Docker** (Optional):
+3. **Docker**:
    - Install Docker from [Docker's official website](https://www.docker.com/).
+
+4. **Azure CLI** (if using Azure Container Registry):
+   - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
 
 ---
 
@@ -82,57 +86,6 @@ The API will now be available at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 ---
 
-## Usage
-
-### 1. Detect Faces
-
-Send a POST request to the `/detect-faces` endpoint with an image file. You can use tools like `curl`, Postman, or any HTTP client library in your preferred programming language.
-
-#### Example Using `curl`:
-
-```bash
-curl -X POST -F "image=@path_to_your_image.jpg" http://127.0.0.1:8000/detect-faces
-```
-
-#### Example Response:
-
-```json
-[
-    {
-        "face_id": "c5c24a82-6845-4031-9d5d-978df587f4d1",
-        "age": 25.5,
-        "gender": "female",
-        "emotion": {
-            "anger": 0.0,
-            "contempt": 0.0,
-            "disgust": 0.0,
-            "fear": 0.0,
-            "happiness": 1.0,
-            "neutral": 0.0,
-            "sadness": 0.0,
-            "surprise": 0.0
-        },
-        "glasses": "NoGlasses",
-        "hair": {
-            "bald": 0.0,
-            "invisible": false,
-            "hair_color": [
-                {"color": "brown", "confidence": 1.0}
-            ]
-        },
-        "smile": 0.99,
-        "face_rectangle": {
-            "top": 100,
-            "left": 150,
-            "width": 200,
-            "height": 200
-        }
-    }
-]
-```
-
----
-
 ## Docker Deployment
 
 ### 1. Build the Docker Image
@@ -152,6 +105,55 @@ docker run -p 8000:8000 --env-file .env face-detection-api
 ```
 
 The API will now be available at [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+---
+
+## Azure Container Registry (ACR) Deployment
+
+### 1. Create an Azure Container Registry
+
+1. Go to the [Azure Portal](https://portal.azure.com/).
+2. Create a new **Container Registry** resource.
+3. Note the **Login Server** (e.g., `myacrname.azurecr.io`).
+
+### 2. Push the Docker Image to ACR
+
+1. Log in to Azure:
+
+   ```bash
+   az login
+   ```
+
+2. Log in to your ACR:
+
+   ```bash
+   az acr login --name <your-acr-name>
+   ```
+
+3. Tag your Docker image:
+
+   ```bash
+   docker tag face-detection-api <your-acr-name>.azurecr.io/face-detection-api:v1
+   ```
+
+4. Push the image to ACR:
+
+   ```bash
+   docker push <your-acr-name>.azurecr.io/face-detection-api:v1
+   ```
+
+### 3. Deploy Using Azure Services
+
+- **Azure App Service**:
+  Use the image in ACR to create a web app.
+- **Azure Kubernetes Service (AKS)**:
+  Orchestrate and manage the container using Kubernetes.
+- **Azure Container Instances (ACI)**:
+  Run the container directly:
+
+  ```bash
+  az container create --resource-group <resource-group>       --name face-detection-api       --image <your-acr-name>.azurecr.io/face-detection-api:v1       --dns-name-label <unique-name>       --ports 8000
+  ```
 
 ---
 
